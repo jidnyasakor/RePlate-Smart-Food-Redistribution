@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Donor Dashboard</title>
+</head>
+<body>
+
+<h2>Donor Dashboard</h2>
+
+<h3>Add Food</h3>
+
+<form id="foodForm">
+
+  <input type="text" id="foodName" placeholder="Food Name" required><br><br>
+
+  <input type="text" id="quantity" placeholder="Quantity" required><br><br>
+
+  <input type="text" id="location" placeholder="Location" required><br><br>
+
+  <input type="datetime-local" id="cookingTime" required><br><br>
+
+  <input type="number" id="safeDurationHours" placeholder="Safe Duration (hours)" required><br><br>
+
+  <button type="submit">Add Food</button>
+
+</form>
+
+<h3>Your Food Listings</h3>
+
+<div id="foodList"></div>
+
+<script>
+
+const donorId = "69995ef8ad47fcfc6b3d16c4";
+
+
+document.getElementById("foodForm").addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  const foodName = document.getElementById("foodName").value;
+  const quantity = document.getElementById("quantity").value;
+  const location = document.getElementById("location").value;
+  const cookingTime = document.getElementById("cookingTime").value;
+  const safeDurationHours = document.getElementById("safeDurationHours").value;
+
+  await fetch("http://localhost:5000/add-food", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      foodName,
+      quantity,
+      location,
+      cookingTime,
+      safeDurationHours,
+      donorId
+    })
+
+  });
+
+  alert("Food added successfully");
+
+  loadMyFood();
+
+});
+
+
+async function loadMyFood() {
+
+  const res = await fetch(`http://localhost:5000/foods/${donorId}`);
+
+  const foods = await res.json();
+
+  const foodList = document.getElementById("foodList");
+
+  foodList.innerHTML = "";
+
+  foods.forEach(food => {
+
+      const expiryTime = new Date(food.expiryAt);
+const now = new Date();
+
+const diff = expiryTime - now;
+
+let expiryText = "Expired";
+
+if (diff > 0) {
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  expiryText = `${hours}h ${minutes}m remaining`;
+
+}
+
+foodList.innerHTML += `
+  <div style="border:1px solid green; padding:10px; margin:10px;">
+  
+    <h4>${food.foodName}</h4>
+    
+    <p>Quantity: ${food.quantity}</p>
+    
+    <p>Status: ${food.status}</p>
+    
+    <p>Expires in: ${expiryText}</p>
+
+  </div>
+`;
+  });
+
+}
+
+loadMyFood();
+
+</script>
+
+</body>
+</html>

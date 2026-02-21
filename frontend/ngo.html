@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NGO Dashboard</title>
+</head>
+<body>
+
+<h2>NGO Dashboard</h2>
+
+<div id="foodList"></div>
+
+<script>
+
+const ngoId = "6999674b8f0268d20f87ed4b";
+
+async function loadFood() {
+
+  const availableRes = await fetch("http://localhost:5000/available-food");
+  const availableFoods = await availableRes.json();
+
+  const acceptedRes = await fetch(`http://localhost:5000/ngo-food/${ngoId}`);
+  const acceptedFoods = await acceptedRes.json();
+
+  const foodList = document.getElementById("foodList");
+
+  foodList.innerHTML = "<h3>Available Food</h3>";
+
+  availableFoods.forEach(food => {
+
+    foodList.innerHTML += `
+      <div style="border:1px solid black; padding:10px; margin:10px;">
+      
+        <h4>${food.foodName}</h4>
+        <p>Status: ${food.status}</p>
+
+        <button onclick="acceptFood('${food._id}')">
+          Accept Food
+        </button>
+
+      </div>
+    `;
+
+  });
+
+  foodList.innerHTML += "<h3>Accepted Food</h3>";
+
+  acceptedFoods.forEach(food => {
+
+    foodList.innerHTML += `
+      <div style="border:1px solid green; padding:10px; margin:10px;">
+      
+        <h4>${food.foodName}</h4>
+        <p>Status: ${food.status}</p>
+        <p>Pickup Status: ${food.pickupStatus}</p>
+
+      </div>
+    `;
+
+  });
+
+}
+
+async function acceptFood(foodId) {
+
+  await fetch(`http://localhost:5000/accept-food/${foodId}`, {
+
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      ngoId: ngoId
+    })
+
+  });
+
+  alert("Food accepted ✅");
+
+  loadFood();
+
+}
+
+loadFood();
+
+</script>
+
+</body>
+</html>

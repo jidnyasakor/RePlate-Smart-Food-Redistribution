@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Volunteer Dashboard</title>
+</head>
+<body>
+
+  <h2>Volunteer Dashboard</h2>
+
+  <div id="pickupList"></div>
+
+  <script>
+
+    const volunteerId = "699977800684576f108fcf5d";
+
+    fetch(`http://localhost:5000/volunteer-food/${volunteerId}`)
+      .then(res => res.json())
+      .then(data => {
+
+        const container = document.getElementById("pickupList");
+
+        if (data.length === 0) {
+          container.innerHTML = "<p>No pickups assigned yet</p>";
+          return;
+        }
+
+        data.forEach(food => {
+
+          container.innerHTML += `
+            <div style="border:1px solid blue; padding:10px; margin:10px;">
+              <h3>${food.foodName}</h3>
+              <p>Location: ${food.location}</p>
+              <p>Status: ${food.status}</p>
+              <p>Pickup Status: ${food.pickupStatus}</p>
+              <button onclick="assignVolunteer('${food._id}')">
+Accept Pickup
+</button>
+
+<button onclick="markPicked('${food._id}')">
+Mark Picked
+</button>
+            </div>
+          `;
+
+        });
+
+      })
+      .catch(err => {
+        console.error(err);
+      });
+
+    async function assignVolunteer(foodId) {
+
+  await fetch(`http://localhost:5000/assign-volunteer/${foodId}`, {
+
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify({
+      volunteerId
+    })
+
+  });
+
+  alert("Pickup accepted");
+
+  location.reload();
+
+}
+
+
+async function markPicked(foodId) {
+
+  await fetch(`http://localhost:5000/mark-picked/${foodId}`, {
+
+    method: "PUT"
+
+  });
+
+  alert("Food picked");
+
+  location.reload();
+
+}
+
+  </script>
+
+</body>
+</html>
